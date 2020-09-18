@@ -5,6 +5,7 @@
 import bs4 as bs
 
 import sys
+import time
 from PyQt5.QtWebEngineWidgets import QWebEnginePage
 from PyQt5.QtWidgets import QApplication
 from PyQt5.QtCore import QUrl
@@ -15,11 +16,12 @@ class Page(QWebEnginePage):
         self.app = QApplication(sys.argv)
         QWebEnginePage.__init__(self)
         self.html = ''
-        self.loadFinished.connect(self._on_load_finished)
+        self.loadFinished.connect(self.on_load_finished)
         self.load(QUrl(url))
+        self.triggerAction(QWebEnginePage.ReloadAndBypassCache, True)
         self.app.exec_()
 
-    def _on_load_finished(self):
+    def on_load_finished(self):
         self.html = self.toHtml(self.Callable)
         print('Load finished')
 
@@ -36,7 +38,8 @@ class Page(QWebEnginePage):
 print('sd')
 URL = 'https://in.tradingview.com/symbols/NSE-POWERGRID/'
 page = Page(URL)
-soup = bs.BeautifulSoup(page.html, 'html.parser')
+soup = bs.BeautifulSoup(page.html, 'lxml')
+
 # soup = bs.BeautifulSoup(source, 'lxml')
 
 # soup = BeautifulSoup(r.content, 'html5lib') 
@@ -44,5 +47,7 @@ print(soup)
 table = soup.find('div', attrs = {'class':'tv-widget-fundamentals__item'}) 
 
 print(table)
-table = soup.find_all('table', attrs = {'id':'equityInfo'})
-print(table)
+print(type(soup))
+
+# table = soup.find_all('table', attrs = {'id':'equityInfo'})
+# print(table)
