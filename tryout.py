@@ -179,34 +179,11 @@ import sys
 from PyQt5.QtWebEngineWidgets import QWebEnginePage
 from PyQt5.QtWidgets import QApplication
 from PyQt5.QtCore import QUrl
+from PyQt5 import QtCore, QtWidgets, QtWebEngineWidgets
 print('loaded all modules')
 
-
-class Page(QWebEnginePage):
-    def __init__(self, url):
-        self.app = QApplication(sys.argv)
-        QWebEnginePage.__init__(self)
-        self.html = ''
-        self.loadFinished.connect(self.on_load_finished)
-        self.load(QUrl(url))
-        self.triggerAction(QWebEnginePage.ReloadAndBypassCache, True)
-        self.app.exec_()
-
-    def on_load_finished(self):
-        self.html = self.toHtml(self.Callable)
-        print('Load finished')
-
-    def Callable(self, html_str):
-        self.html = html_str
-        self.app.quit()
-
-def company(id):
-    URL = 'https://in.tradingview.com/symbols/NSE-' + id
-    print('getting for '+ URL)
-    page = Page(URL)
-    print('came')
-    soup = bs.BeautifulSoup(page.html, 'html5lib')
-
+def company(source):
+    soup = bs.BeautifulSoup(source, 'html5lib')
     #-----------------------------------------------------------------------------
     # EPS, MarketCap, DividendYield, P.E
     table = soup.find_all('div', attrs = {'class':'tv-category-header__fundamentals js-header-fundamentals'}) 
@@ -273,39 +250,79 @@ def company(id):
     pprint(d1)
     pprint(d2)
     return (d1, d2)
+
+class WebPage(QWebEnginePage):
+    def __init__(self):
+        super(WebPage, self).__init__()
+        self.loadFinished.connect(self.handleLoadFinished)
+
+    def start(self, urls):
+        self._urls = iter(urls)
+        self.fetchNext()
+
+    def fetchNext(self):
+        try:
+            url = next(self._urls)
+        except StopIteration:
+            return False
+        else:
+            self.triggerAction(QWebEnginePage.ReloadAndBypassCache)
+            self.load(QtCore.QUrl(url))
+            self.triggerAction(QWebEnginePage.ReloadAndBypassCache, False)
+        return True
+
+    def processCurrentPage(self, html):
+        url = self.url().toString()
+        print('loaded: [%d chars] %s' % (len(html), url))
+        company(html)
+        print('completed: [%d chars] %s' % (len(html), url))
+        if not self.fetchNext():
+            QtWidgets.qApp.quit()
+
+    def handleLoadFinished(self):
+        self.toHtml(self.processCurrentPage)
+
+
+urls = ['https://in.tradingview.com/symbols/NSE-MRPL', 'https://in.tradingview.com/symbols/NSE-GAIL', 'https://in.tradingview.com/symbols/NSE-GAIL']
+# print('getting for '+ URL)
+app = QtWidgets.QApplication(sys.argv)
+webpage = WebPage()
+webpage.start(urls)
+sys.exit(app.exec_())
+print('came')
 #----------------------------------------------------------------------------------------------------
 # work on excel
 
-import openpyxl
+# import openpyxl
 
-path = "C:\\Users\\NishchalMN\\Desktop\\stock\\book1.xlsx"
+# path = "C:\\Users\\NishchalMN\\Desktop\\stock\\book1.xlsx"
   
-wb = openpyxl.load_workbook(path) 
+# wb = openpyxl.load_workbook(path) 
   
-sheet = wb.active 
+# sheet = wb.active 
 
-d1 = {}
-d2 = {}
+# d1 = {}
+# d2 = {}
 
-req = ['SharePrice', 'P/E', 'EPS', 'Price to Book (FY)', 'Div Yield', 'Enterprise Value/EBITDA (TTM)', 'MCS', 'ES', 'Market Capitalization', '52 Week High', '52 Week Low']
+# req = ['SharePrice', 'P/E', 'EPS', 'Price to Book (FY)', 'Div Yield', 'Enterprise Value/EBITDA (TTM)', 'MCS', 'ES', 'Market Capitalization', '52 Week High', '52 Week Low']
 
 
-for comp in range(12, 21):
-    # try:
-    name = sheet.cell(row = comp, column = 2)
-    d1, d2 = company(name.value)
-    d = [d1, d1, d1, d2, d1, d2, d2, d2, d2, d2, d2]
-    print('sddddd')
-    print(d1, d2)
-    for i in range(16, 27):
-        try:
-            cell = sheet.cell(row = comp, column = i) 
-            cell.value = d[i-16][req[i-16]]
-        except:
-            print("Couldn't get " + d[i-16][req[i-16]] + " value")
-    # except:
-    #     print('Company code ' + sheet.cell(row = comp, column = 2).value + ' not found')
+# for comp in range(12, 21):
+#     # try:
+#     name = sheet.cell(row = comp, column = 2)
+#     d1, d2 = company(name.value)
+#     d = [d1, d1, d1, d2, d1, d2, d2, d2, d2, d2, d2]
+#     print('sddddd')
+#     print(d1, d2)
+#     for i in range(16, 27):
+#         try:
+#             cell = sheet.cell(row = comp, column = i) 
+#             cell.value = d[i-16][req[i-16]]
+#         except:
+#             print("Couldn't get " + d[i-16][req[i-16]] + " value")
+#     # except:
+#     #     print('Company code ' + sheet.cell(row = comp, column = 2).value + ' not found')
 
-wb.save("C:\\Users\\NishchalMN\\Desktop\\stock\\book1.xlsx")
+# wb.save("C:\\Users\\NishchalMN\\Desktop\\stock\\book1.xlsx")
 
-print('done')
+# print('done')
