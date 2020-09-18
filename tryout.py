@@ -63,39 +63,111 @@
 # # datframe 
 # print("\n\nPANDAS DATAFRAME\n") 
 # print(pd.DataFrame(p.tables[1]))
-def render(source_html):
-    """Fully render HTML, JavaScript and all."""
+# def render(source_html):
+#     """Fully render HTML, JavaScript and all."""
 
-    import sys
-    from PyQt5.QtWidgets import QApplication
-    from PyQt5.QtWebEngineWidgets import QWebEngineView
+#     import sys
+#     from PyQt5.QtWidgets import QApplication
+#     from PyQt5.QtWebEngineWidgets import QWebEngineView
 
-    class Render(QWebEngineView):
-        def __init__(self, html):
-            self.html = None
-            self.app = QApplication(sys.argv)
-            QWebEngineView.__init__(self)
-            self.loadFinished.connect(self._loadFinished)
-            self.setHtml(html)
-            self.app.exec_()
+#     class Render(QWebEngineView):
+#         def __init__(self, html):
+#             self.html = None
+#             self.app = QApplication(sys.argv)
+#             QWebEngineView.__init__(self)
+#             self.loadFinished.connect(self._loadFinished)
+#             self.setHtml(html)
+#             self.app.exec_()
 
-        def _loadFinished(self, result):
-            # This is an async call, you need to wait for this
-            # to be called before closing the app
-            self.page().toHtml(self.callable)
+#         def _loadFinished(self, result):
+#             # This is an async call, you need to wait for this
+#             # to be called before closing the app
+#             self.page().toHtml(self.callable)
 
-        def callable(self, data):
-            self.html = data
-            # Data has been stored, it's safe to quit the app
-            self.app.quit()
+#         def callable(self, data):
+#             self.html = data
+#             # Data has been stored, it's safe to quit the app
+#             self.app.quit()
 
-    return Render(source_html).html
+#     return Render(source_html).html
 
 
-import requests
-sample_html = requests.get('https://in.tradingview.com/symbols/NSE-MRPL/').text
-soup = render(sample_html)
+# import requests
+# sample_html = requests.get('https://in.tradingview.com/symbols/NSE-MRPL/').text
+# soup = render(sample_html)
 
-print(soup)
-if 'Book' in soup:
-    print('sd')
+# print(soup)
+# if 'Book' in soup:
+#     print('sd')
+
+
+
+'''
+# import requests 
+# # from bs4 import BeautifulSoup 
+# import csv 
+# from pprint import pprint
+import bs4 as bs
+
+import sys
+import time
+from PyQt5.QtWebEngineWidgets import QWebEnginePage
+from PyQt5.QtWidgets import QApplication
+from PyQt5.QtCore import QUrl
+print('sdsd')
+
+class Page(QWebEnginePage):
+    def __init__(self, url):
+        self.app = QApplication(sys.argv)
+        QWebEnginePage.__init__(self)
+        self.html = ''
+        self.loadFinished.connect(self.on_load_finished)
+        self.load(QUrl(url))
+        self.triggerAction(QWebEnginePage.ReloadAndBypassCache, True)
+        self.app.exec_()
+
+    def on_load_finished(self):
+        self.html = self.toHtml(self.Callable)
+        print('Load finished')
+
+    def Callable(self, html_str):
+        self.html = html_str
+        self.app.quit()
+
+
+
+    # page = Page('https://pythonprogramming.net/parsememcparseface/')
+    # soup = bs.BeautifulSoup(page.html, 'html.parser')
+    # js_test = soup.find('p', class_='jstest')
+
+print('sd')
+URL = 'https://in.tradingview.com/symbols/NSE-MRPL/'
+page = Page(URL)
+soup = bs.BeautifulSoup(page.html, 'lxml')
+
+# soup = bs.BeautifulSoup(source, 'lxml')
+
+# soup = BeautifulSoup(r.content, 'html5lib') 
+# print(soup)
+table = soup.find('div', attrs = {'class':'tv-widget-fundamentals__item'}) 
+
+print(table)
+print(type(soup))
+
+# table = soup.find_all('table', attrs = {'id':'equityInfo'})
+# print(table)
+'''
+
+import openpyxl
+
+path = "C:\\Users\\NishchalMN\\Desktop\\stock\\book1.xlsx"
+  
+wb = openpyxl.load_workbook(path) 
+  
+sheet = wb.active 
+
+cell_obj = sheet.cell(row = 11, column = 16) 
+
+cell_obj.value = 8.45
+
+wb.save("C:\\Users\\NishchalMN\\Desktop\\stock\\book1.xlsx")

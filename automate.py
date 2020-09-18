@@ -1,15 +1,12 @@
-# import requests 
-# # from bs4 import BeautifulSoup 
-# import csv 
-# from pprint import pprint
+from pprint import pprint
 import bs4 as bs
-
+import openpyxl
 import sys
-import time
 from PyQt5.QtWebEngineWidgets import QWebEnginePage
 from PyQt5.QtWidgets import QApplication
 from PyQt5.QtCore import QUrl
-print('sdsd')
+print('loaded all modules')
+
 
 class Page(QWebEnginePage):
     def __init__(self, url):
@@ -30,24 +27,53 @@ class Page(QWebEnginePage):
         self.app.quit()
 
 
-
-    # page = Page('https://pythonprogramming.net/parsememcparseface/')
-    # soup = bs.BeautifulSoup(page.html, 'html.parser')
-    # js_test = soup.find('p', class_='jstest')
-
-print('sd')
-URL = 'https://in.tradingview.com/symbols/NSE-POWERGRID/'
+URL = 'https://in.tradingview.com/symbols/NSE-MRPL/'
 page = Page(URL)
-soup = bs.BeautifulSoup(page.html, 'lxml')
+soup = bs.BeautifulSoup(page.html, 'html5lib')
 
-# soup = bs.BeautifulSoup(source, 'lxml')
+#-----------------------------------------------------------------------------
+# EPS, MarketCap, DividendYield, P.E
+table = soup.find_all('div', attrs = {'class':'tv-category-header__fundamentals js-header-fundamentals'}) 
+d1 = {}  # dictionary having EPS, MarketCap, DividendYield, P.E, SharePrice
 
-# soup = BeautifulSoup(r.content, 'html5lib') 
-print(soup)
-table = soup.find('div', attrs = {'class':'tv-widget-fundamentals__item'}) 
+try:
+    for i in table[0].contents[1:]:
+        d1[i.contents[3].contents[0]] = i.contents[1].contents[0]
 
-print(table)
-print(type(soup))
+    print(d1)
+except:
+    print('Error while calculating EPS, Div, PE !')
+# pprint(d1)
+#------------------------------------------------------------------------------
 
-# table = soup.find_all('table', attrs = {'id':'equityInfo'})
-# print(table)
+# Share Price
+table = soup.find_all('div', attrs = {'class':'tv-symbol-price-quote__value js-symbol-last'})
+
+try:
+   d1['SharePrice'] = table[0].contents[0].contents[0]
+
+except:
+    print('Error while calculating Share price !')
+
+# pprint(d1)
+#------------------------------------------------------------------------------
+
+table = soup.find_all('div', attrs = {'class':'tv-widget-fundamentals tv-widget-fundamentals--card-view'})
+d2 = {}
+table = table[0].contents
+# print(table) 
+try:
+    for i in table:
+        try:
+
+            for j in i.contents:
+                try:
+                    d2[j.span.contents[0].strip()] = j.span.nextSibling.nextSibling.contents[0].strip()
+                except:
+                    pass
+        except:
+            pass
+    print(d2)
+except:
+    print('Error while calculating all the values !')
+    
