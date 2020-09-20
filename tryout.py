@@ -176,85 +176,87 @@ from pprint import pprint
 import bs4 as bs
 import openpyxl
 import sys
+import time
 from PyQt5.QtWebEngineWidgets import QWebEnginePage
 from PyQt5.QtWidgets import QApplication
 from PyQt5.QtCore import QUrl
 from PyQt5 import QtCore, QtWidgets, QtWebEngineWidgets
 print('loaded all modules')
 
-def company(source):
-    soup = bs.BeautifulSoup(source, 'html5lib')
-    #-----------------------------------------------------------------------------
-    # EPS, MarketCap, DividendYield, P.E
-    table = soup.find_all('div', attrs = {'class':'tv-category-header__fundamentals js-header-fundamentals'}) 
-    d1 = {}  # dictionary having EPS, MarketCap, DividendYield, P.E, SharePrice
-
-    try:
-        for i in table[0].contents[1:]:
-            d1[i.contents[3].contents[0]] = i.contents[1].contents[0]
-
-    except:
-        print('Error while calculating EPS, Div, PE !')
-    # pprint(d1)
-    #------------------------------------------------------------------------------
-
-    # Share Price
-    table = soup.find_all('div', attrs = {'class':'tv-symbol-price-quote__value js-symbol-last'})
-
-    try:
-        d1['SharePrice'] = table[0].contents[0].contents[0]
-
-    except:
-        print('Error while calculating Share price !')
-
-    # pprint(d1)
-    #------------------------------------------------------------------------------
-
-    table = soup.find_all('div', attrs = {'class':'tv-widget-fundamentals tv-widget-fundamentals--card-view'})
-    d2 = {}
-    table = table[0].contents
-    # print(table) 
-    try:
-        for i in table:
-            try:
-                for j in i.contents:
-                    try:
-                        d2[j.span.contents[0].strip()] = j.span.nextSibling.nextSibling.contents[0].strip()
-                    except:
-                        pass
-            except:
-                pass
-    except:
-        print('Error while calculating all the values !')
-
-    # pprint(d2)
-
-    #--------------------------------------------------------------
-
-    # trying for custom values
-
-    try:
-        MCS = float(d2['Market Capitalization'][:len(d2['Market Capitalization'])-1]) / float(d2['Total Revenue (FY)'][:len(d2['Total Revenue (FY)'])-1])
-        d2['MCS'] = MCS
-    except:
-        d2['MCS'] = '—'
-        print('Not enough values for Market value/Sales')
-
-    try:
-        ES = float(d2['Enterprise Value (MRQ)'][:len(d2['Enterprise Value (MRQ)'])-1]) / float(d2['Total Revenue (FY)'][:len(d2['Total Revenue (FY)'])-1])
-        d2['ES'] = ES
-    except:
-        d2['ES'] = '—'
-        print('Not enough values for EV/Sales')
-
-    pprint(d1)
-    pprint(d2)
-    return (d1, d2)
-
 class WebPage(QWebEnginePage):
     def __init__(self):
         super(WebPage, self).__init__()
         self.loadFinished.connect(self.handleLoadFinished)
+        self.html = ''
+
+    def company(self):
+        soup = bs.BeautifulSoup(self.html, 'lxml')
+        #-----------------------------------------------------------------------------
+        # EPS, MarketCap, DividendYield, P.E
+        table = soup.find_all('div', attrs = {'class':'tv-category-header__fundamentals js-header-fundamentals'}) 
+        d1 = {}  # dictionary having EPS, MarketCap, DividendYield, P.E, SharePrice
+
+        try:
+            for i in table[0].contents[1:]:
+                d1[i.contents[3].contents[0]] = i.contents[1].contents[0]
+
+        except:
+            print('Error while calculating EPS, Div, PE !')
+        # pprint(d1)
+        #------------------------------------------------------------------------------
+
+        # Share Price
+        table = soup.find_all('div', attrs = {'class':'tv-symbol-price-quote__value js-symbol-last'})
+
+        try:
+            d1['SharePrice'] = table[0].contents[0].contents[0]
+
+        except:
+            print('Error while calculating Share price !')
+
+        # pprint(d1)
+        #------------------------------------------------------------------------------
+
+        table = soup.find_all('div', attrs = {'class':'tv-widget-fundamentals tv-widget-fundamentals--card-view'})
+        d2 = {}
+        table = table[0].contents
+        pprint(table) 
+        try:
+            for i in table:
+                try:
+                    for j in i.contents:
+                        try:
+                            d2[j.span.contents[0].strip()] = j.span.nextSibling.nextSibling.contents[0].strip()
+                        except:
+                            pass
+                except:
+                    pass
+        except:
+            print('Error while calculating all the values !')
+
+        # pprint(d2)
+
+        #--------------------------------------------------------------
+
+        # trying for custom values
+
+        try:
+            MCS = float(d2['Market Capitalization'][:len(d2['Market Capitalization'])-1]) / float(d2['Total Revenue (FY)'][:len(d2['Total Revenue (FY)'])-1])
+            d2['MCS'] = MCS
+        except:
+            d2['MCS'] = '—'
+            print('Not enough values for Market value/Sales')
+
+        try:
+            ES = float(d2['Enterprise Value (MRQ)'][:len(d2['Enterprise Value (MRQ)'])-1]) / float(d2['Total Revenue (FY)'][:len(d2['Total Revenue (FY)'])-1])
+            d2['ES'] = ES
+        except:
+            d2['ES'] = '—'
+            print('Not enough values for EV/Sales')
+
+        pprint(d1)
+        pprint(d2)
+        # return (d1, d2)
 
     def start(self, urls):
         self._urls = iter(urls)
@@ -263,27 +265,38 @@ class WebPage(QWebEnginePage):
     def fetchNext(self):
         try:
             url = next(self._urls)
+            print(url)
+            self.load(QUrl(url))
+            print('tttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttt')
+           
+            self.triggerAction(QWebEnginePage.ReloadAndBypassCache)
+            self.triggerAction(QWebEnginePage.Forward, True)
+            print('sssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss')
         except StopIteration:
             return False
-        else:
-            self.triggerAction(QWebEnginePage.ReloadAndBypassCache)
-            self.load(QtCore.QUrl(url))
-            self.triggerAction(QWebEnginePage.ReloadAndBypassCache, False)
+        # else:
+            
         return True
 
-    def processCurrentPage(self, html):
+    def processCurrentPage(self, html_str):
         url = self.url().toString()
-        print('loaded: [%d chars] %s' % (len(html), url))
-        company(html)
-        print('completed: [%d chars] %s' % (len(html), url))
+        print('loaded: [%d chars] %s' % (len(html_str), url))
+        self.html = html_str
+        self.company()
+        time.sleep(3)
+        print('completed: [%d chars] %s' % (len(html_str), url))
+        
         if not self.fetchNext():
             QtWidgets.qApp.quit()
 
     def handleLoadFinished(self):
+        url = self.url().toString()
+        print('url is -------------------' + url)
         self.toHtml(self.processCurrentPage)
 
 
-urls = ['https://in.tradingview.com/symbols/NSE-MRPL', 'https://in.tradingview.com/symbols/NSE-GAIL', 'https://in.tradingview.com/symbols/NSE-GAIL']
+
+urls = ['https://in.tradingview.com/symbols/NSE-MRPL', 'https://in.tradingview.com/symbols/NSE-ONGC']
 # print('getting for '+ URL)
 app = QtWidgets.QApplication(sys.argv)
 webpage = WebPage()

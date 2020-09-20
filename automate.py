@@ -5,6 +5,8 @@ import sys
 from PyQt5.QtWebEngineWidgets import QWebEnginePage
 from PyQt5.QtWidgets import QApplication
 from PyQt5.QtCore import QUrl
+from bs4 import BeautifulSoup
+import requests
 print('loaded all modules')
 
 
@@ -29,10 +31,19 @@ class Page(QWebEnginePage):
 def company(id):
     URL = 'https://in.tradingview.com/symbols/NSE-' + id
     print('getting for '+ URL)
-    page = Page(URL)
-    print('came')
-    soup = bs.BeautifulSoup(page.html, 'html5lib')
+    # page = Page(URL)
+    from selenium import webdriver
+    
+    options = webdriver.ChromeOptions()
+    options.add_argument('headless')
+    driver = webdriver.Chrome(chrome_options = options)
+    driver.get(URL)
 
+    html = driver.page_source
+    # soup = BeautifulSoup(html)
+    print('came')
+    soup = bs.BeautifulSoup(html, 'html5lib')
+    # print(soup)
     #-----------------------------------------------------------------------------
     # EPS, MarketCap, DividendYield, P.E
     table = soup.find_all('div', attrs = {'class':'tv-category-header__fundamentals js-header-fundamentals'}) 
@@ -56,13 +67,13 @@ def company(id):
     except:
         print('Error while calculating Share price !')
 
-    # pprint(d1)
+    pprint(d1)
     #------------------------------------------------------------------------------
 
-    table = soup.find_all('div', attrs = {'class':'tv-widget-fundamentals tv-widget-fundamentals--card-view'})
+    table = soup.find_all('div', attrs = {'class':"tv-feed-widget__scroll-content js-scroll-content"})
     d2 = {}
-    table = table[0].contents
-    # print(table) 
+    table = table[0].div.contents
+    pprint(table) 
     try:
         for i in table:
             try:
@@ -116,7 +127,7 @@ d2 = {}
 req = ['SharePrice', 'P/E', 'EPS', 'Price to Book (FY)', 'Div Yield', 'Enterprise Value/EBITDA (TTM)', 'MCS', 'ES', 'Market Capitalization', '52 Week High', '52 Week Low']
 
 
-for comp in range(12, 21):
+for comp in range(12, 18):
     # try:
     name = sheet.cell(row = comp, column = 2)
     d1, d2 = company(name.value)
@@ -128,7 +139,7 @@ for comp in range(12, 21):
             cell = sheet.cell(row = comp, column = i) 
             cell.value = d[i-16][req[i-16]]
         except:
-            print("Couldn't get " + d[i-16][req[i-16]] + " value")
+            print("Couldn't get " + " value")
     # except:
     #     print('Company code ' + sheet.cell(row = comp, column = 2).value + ' not found')
 
