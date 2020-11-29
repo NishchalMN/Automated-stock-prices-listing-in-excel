@@ -1,0 +1,11 @@
+excel_file_path = "C:\\Users\\NishchalMN\\Desktop\\stock\\sanchith.xlsx"
+order of columns = ['SharePrice', '52 Week High', '52 Week Low','Market Capitalization', 'Enterprise Value (MRQ)', 'EPS', 'P/E', 'Price to Book (FY)', 'Price to Revenue Ratio (TTM)', 'Div Yield', 'Return on Equity (TTM)', 'Return on Assets (TTM)','Return on Invested Capital (TTM)', 'Revenue per Employee (TTM)', 'EBITDA (TTM)', 'Last Year Revenue (FY)', 'Enterprise Value/EBITDA (TTM)', 'MCS', 'ES']
+start_cell = (11, 2)
+end_cell = (15, 2)
+starting_custom_cell = (10, 16)
+excel_file_save_path = "C:\\Users\\NishchalMN\\Desktop\\stock\\book4.xlsx"
+
+# Note
+- order is (row_num, col_num)
+- the options you can have in stock fields are ['SharePrice', '52 Week High', '52 Week Low','Market Capitalization', 'Enterprise Value (MRQ)', 'EPS', 'P/E', 'Price to Book (FY)', 'Price to Revenue Ratio (TTM)', 'Div Yield', 'Return on Equity (TTM)', 'Return on Assets (TTM)','Return on Invested Capital (TTM)', 'Revenue per Employee (TTM)', 'EBITDA (TTM)', 'Last Year Revenue (FY)', 'Enterprise Value/EBITDA (TTM)', 'MCS', 'ES']
+- and the naming of fields should not be changed, ex. 'SharePrice' should not be changed to 'share price' or 'Share_price'

@@ -108,37 +108,37 @@ def company(id, exchange):
 
 import openpyxl
 
-path = "C:\\Users\\NishchalMN\\Desktop\\stock\\book2.xlsx"
+file = open('values.txt', 'r')
+lines = file.readlines()
+
+path = eval(lines[0].split('=')[1])           # path of the excel file
   
 wb = openpyxl.load_workbook(path) 
   
 sheet = wb.active 
 
-req = ['SharePrice', '52 Week High', '52 Week Low','Market Capitalization', 'Enterprise Value (MRQ)', 'EPS', 'P/E', 'Price to Book (FY)',\
-    'Price to Revenue Ratio (TTM)', 'Div Yield', 'Return on Equity (TTM)', 'Return on Assets (TTM)','Return on Invested Capital (TTM)',\
-        'Revenue per Employee (TTM)', 'EBITDA (TTM)', 'Last Year Revenue (FY)', 'Enterprise Value/EBITDA (TTM)', 'MCS',\
-             'ES']
+req = eval(lines[1].split('=')[1])             # required stock fields
 
 failed = []
 
 # trying using NSE
-for comp in range(76, 78):
+for comp in range(eval(lines[2].split('=')[1])[0], eval(lines[3].split('=')[1])[0]):             # name of the stock row number
     try:
-        name = sheet.cell(row = comp, column = 2)
+        name = sheet.cell(row = comp, column = eval(lines[2].split('=')[1])[1])                   # name of the stock column number
         d1, d2 = company(name.value, 'NSE')
 
         # print(d1, d2)
-
-        for i in range(16, 16+len(req)):
+        custom = eval(lines[4].split('=')[1])[1]            # custom cell column number
+        for i in range(custom, custom + len(req)):         
             try:
                 cell = sheet.cell(row = comp, column = i) 
-                temp = d2[req[i-16]] if(req[i-16] in d2) else d1[req[i-16]]
+                temp = d2[req[i-custom]] if(req[i-custom] in d2) else d1[req[i-custom]]
                 cell.value = temp
             except:
-                print("Couldn't get " + req[i-16] + " value")
+                print("Couldn't get " + req[i-custom] + " value")
     except:
-        print('Company code ' + sheet.cell(row = comp, column = 2).value + ' not found')
-        failed.append((sheet.cell(row = comp, column = 2).value, comp))
+        print('Company code ' + sheet.cell(row = comp, column = eval(lines[2].split('=')[1])[1]).value + ' not found')
+        failed.append((sheet.cell(row = comp, column = eval(lines[2].split('=')[1])[1]).value, comp))
 
 
 
@@ -150,18 +150,18 @@ for (name, comp) in failed:
         d1, d2 = company(name, 'BSE')
 
         # print(d1, d2)
-
-        for i in range(16, 16+len(req)):
+        custom = eval(lines[4].split('=')[1])[1]
+        for i in range(custom, custom+len(req)):
             try:
                 cell = sheet.cell(row = comp, column = i) 
-                temp = d2[req[i-16]] if(req[i-16] in d2) else d1[req[i-16]]
+                temp = d2[req[i-custom]] if(req[i-custom] in d2) else d1[req[i-custom]]
                 cell.value = temp
             except:
-                print("Couldn't get " + req[i-16] + " value")
+                print("Couldn't get " + req[i-custom] + " value")
     except:
-        print('Company code ' + sheet.cell(row = comp, column = 2).value + ' not found')
+        print('Company code ' + sheet.cell(row = comp, column = eval(lines[2].split('=')[1])[1]).value + ' not found')
 
-wb.save("C:\\Users\\NishchalMN\\Desktop\\stock\\book2.xlsx")
+wb.save(eval(lines[5].split('=')[1]))
 
 print('done')
-'SharePrice', '52 Week High', '52 Week Low','Market Capitalization', 'Enterprise Value (MRQ)', 'EPS', 'P/E', 'Price to Book (FY)','Price to Revenue Ratio (TTM)', 'Div Yield', 'Return on Equity (TTM)', 'Return on Assets (TTM)','Return on Invested Capital (TTM)','Revenue per Employee (TTM)', 'EBITDA (TTM)', 'Last Year Revenue (FY)', 'Enterprise Value/EBITDA (TTM)', 'Market Cap/Sales', 'Enterprise Value/Sales'
+# 'SharePrice', '52 Week High', '52 Week Low','Market Capitalization', 'Enterprise Value (MRQ)', 'EPS', 'P/E', 'Price to Book (FY)','Price to Revenue Ratio (TTM)', 'Div Yield', 'Return on Equity (TTM)', 'Return on Assets (TTM)','Return on Invested Capital (TTM)','Revenue per Employee (TTM)', 'EBITDA (TTM)', 'Last Year Revenue (FY)', 'Enterprise Value/EBITDA (TTM)', 'Market Cap/Sales', 'Enterprise Value/Sales'
